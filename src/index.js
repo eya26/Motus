@@ -7,6 +7,7 @@ const morgan = require('morgan');
 
 const GameRoutes = require('./routes/game');
 const WordRoutes = require('./routes/word');
+const AuthRoutes = require('./routes/auth');
 
 const App = express();
 App.use(helmet());
@@ -32,6 +33,7 @@ App.post('/',(request,response) => {
 
 App.use('/game', GameRoutes);
 App.use('/word', WordRoutes);
+App.use('/auth', AuthRoutes);
 const PORT = 5000
 App.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
