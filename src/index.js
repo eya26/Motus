@@ -13,7 +13,7 @@ App.use(helmet());
 App.use(morgan('common'));
 App.use(express.json());
 
-mongoose.connect("mongodb+srv://eyachaftar26:thF9bp5dxdnQ7Q8vjb@cluster0.f0aavcl.mongodb.net/?retryWrites=true&w=majority", {
+mongoose.connect("mongodb://127.0.0.1:27017/admin", {
     useNewUrlParser: true
 }).then(() => {
     console.log("DB connected")
