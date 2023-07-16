@@ -1,9 +1,8 @@
-console.log('Hello World!')
-
 const express = require('express');
 const mongoose = require("mongoose")
 const helmet = require('helmet');
 const morgan = require('morgan');
+const session = require('express-session');
 
 const GameRoutes = require('./routes/game');
 const WordRoutes = require('./routes/word');
@@ -13,6 +12,15 @@ const App = express();
 App.use(helmet());
 App.use(morgan('common'));
 App.use(express.json());
+App.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+        httpOnly: true
+    }
+}));
 
 mongoose.connect("mongodb://127.0.0.1:27017/admin", {
     useNewUrlParser: true
