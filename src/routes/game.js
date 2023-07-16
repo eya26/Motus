@@ -4,6 +4,15 @@ const GameModel = require("../models/game");
 
 const Router = express.Router();
 
+const isLogged = (request, response, next) => {
+    if (request.session.user) {
+        console.log('test');
+        next();
+    } else {
+        return response.status(500).json({'msg': "not logged !"})
+    }
+}
+
 Router.post('/', async (request, response) => {
     const word = await WordModel.aggregate([{
         $sample: {size: 1}
@@ -21,10 +30,11 @@ Router.post('/', async (request, response) => {
         game = await GameModel.find({
             _id: game._id
         }).populate('user').populate('word')
+
         return response.status(200).json({
             "msg": game
         });
-    } catch (error){
+    } catch (error) {
         return response.status(500).json({
             "error": error.message
         });
@@ -34,7 +44,7 @@ Router.post('/', async (request, response) => {
 Router.get('/:id', async (request, response) => {
     const {id} = request.params;
 
-    try{
+    try {
         const game = await GameModel.findOne({_id: id});
 
         return response.status(200).json({
@@ -47,24 +57,48 @@ Router.get('/:id', async (request, response) => {
     }
 })
 
+Router.post('/verif', isLogged, async (request, response) => {
+    const gameId = request.body.gameId;
+    const userWord = request.body.word;
 
-
-Router.post('/verif', (request, response) => {
-    if (typeof request.body.word === 'undefined') {
-        return response.status(500).json({
-            "msg": "You have to send 'word' value"
-        });
+    if (typeof userWord === 'undefined') {
+        return response.status(400).json({ "msg": "You have to send 'word' value" });
     }
 
-    if (request.body.word === search) {
+    try {
+        const game = await GameModel.findById(gameId).populate('word');
+
+        if (!game) {
+            return response.status(404).json({ "msg": "Game not found" });
+        }
+        const targetWord = game.word.name;
+
+        let result = '';
+        for (let i = 0; i < targetWord.length; i++) {
+            if (userWord[i] === targetWord[i]) {
+                result += '1';
+            } else if (targetWord.includes(userWord[i])) {
+                result += '0';
+            } else {
+                result += 'x';
+            }
+        }
+
+        game.tries.push({
+            word: userWord,
+            result: result
+        });
+
+        await game.save();
+
         return response.status(200).json({
-            "result": "You found the word !"
+            "word": userWord,
+            "response": result,
+            "game": game
         });
+    } catch (error) {
+        return response.status(500).json({ "error": error.message });
     }
-
-    return response.status(500).json({
-        "result": "You didn't find the word !"
-    });
-})
+});
 
 module.exports = Router;

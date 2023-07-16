@@ -7,9 +7,9 @@ const saltRounds = 10;
 const UserModel = require('../models/user');
 const user = require('../models/user');
 
-const {generateAccessToken, generateRefreshToken } = require('../tools');
+const { generateAccessToken, generateRefreshToken } = require('../tools');
 
-Router.post('/register', async(request, response) => {
+Router.post('/register', async (request, response) => {
     const {email, email_cfg, password, password_cfg, username, active} = request.body;
 
     const hash = await bcrypt.hash(password, saltRounds);
@@ -21,26 +21,27 @@ Router.post('/register', async(request, response) => {
         active
     });
 
-
     try {
+        
         await user.save();
 
         return response.status(200).json({
             "user": user
         });
-    } catch (error){
+
+    } catch (error) {
         return response.status(500).json({
             "error": error.message
         });
-
     }
+
 });
 
 Router.post('/login', async (request, response) => {
     const {email, password} = request.body;
 
     try {
-
+        
         let user = await UserModel.findOne({
             email,
             active: true
@@ -53,9 +54,9 @@ Router.post('/login', async (request, response) => {
                 // request.session.user = user;
 
                 const accessToken = generateAccessToken(user._id)
-                const refreshToken = generateRefreshToken(user._id)
+                const refeshToken = generateRefreshToken(user._id)
 
-                response.cookie('refreshtoken', refreshToken, {
+                response.cookie('refreshtoken', refeshToken, {
                     httpOnly: true,
                     maxAge: 30*24*60*60*1000
                 });
